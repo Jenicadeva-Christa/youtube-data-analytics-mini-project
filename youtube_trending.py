@@ -19,9 +19,6 @@ def get_base64(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-# ─────────────────────────────────────────────
-#  PAGE CONFIG
-# ─────────────────────────────────────────────
 st.set_page_config(
     page_title="TrendVault • YouTube Trending",
     page_icon="🧊",
@@ -29,12 +26,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ─────────────────────────────────────────────
-#  GLOBAL CSS
-# ─────────────────────────────────────────────
 import streamlit.components.v1
-
-
 st.components.v1.html('''
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
@@ -275,17 +267,11 @@ ul[data-testid="stVirtualDropdown"] li {
 </style>
 """, unsafe_allow_html=True)
 
-# ─────────────────────────────────────────────
-#  SESSION STATE
-# ─────────────────────────────────────────────
 if "page" not in st.session_state:
     st.session_state.page = "Home"
 if "selected_model" not in st.session_state:
     st.session_state.selected_model = "Decision Tree"
 
-# ─────────────────────────────────────────────
-#  CATEGORY MAP
-# ─────────────────────────────────────────────
 CATEGORY_MAP = {
     1:"Film & Animation", 2:"Autos & Vehicles", 10:"Music",
     15:"Pets & Animals", 17:"Sports", 19:"Travel & Events",
@@ -294,9 +280,6 @@ CATEGORY_MAP = {
     27:"Education", 28:"Science & Technology", 29:"Nonprofits & Activism"
 }
 
-# ─────────────────────────────────────────────
-#  DATA LOADER
-# ─────────────────────────────────────────────
 @st.cache_data
 def load_data():
     try:
@@ -364,8 +347,6 @@ def load_data():
     return df
 
 df = load_data()
-
-# ───────────────────────────────────────
 with st.sidebar:
     st.markdown("""
     <div style='text-align:center;padding:24px 0 12px;'>
@@ -390,10 +371,6 @@ with st.sidebar:
       <span style='display:inline-flex; align-items:center; gap:8px;'><i data-lucide='layout-dashboard' style='width:18px; height:18px; color:#374151;'></i></span> {df['category_name'].nunique()} categories</div>""", unsafe_allow_html=True)
 
 page = st.session_state.page
-
-# ══════════════════════════════════════════════
-#  PAGE 1 — HOME
-# ══════════════════════════════════════════════
 if page == "Home":
 
     # 3D Hero Section
@@ -494,12 +471,6 @@ if page == "Home":
                 </div>
               </div>
             </div>""", unsafe_allow_html=True)
-
-
-
-# ══════════════════════════════════════════════
-#  PAGE 2 — SEARCH & EXPLORE
-# ══════════════════════════════════════════════
 elif page == "Search & Explore":
     st.markdown("""<h1 style='font-family:Inter;font-weight:700;font-size:32px;
         color:#0f172a;'>
@@ -679,16 +650,12 @@ elif page == "Search & Explore":
                   </div>
                 </div>""", unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════
-#  PAGE 3 — ANALYTICS (PER-CATEGORY)
-# ══════════════════════════════════════════════
 elif page == "Trending Analytics":
     st.markdown("""<h1 style='font-family:Outfit;font-weight:900;font-size:38px;
         background:linear-gradient(90deg,#7c3aed,#a855f7);
         -webkit-background-clip:text;-webkit-text-fill-color:transparent;'>
         Trending Analytics</h1>""", unsafe_allow_html=True)
 
-    # ── Global KPIs ──────────────────────────────────────────────────────────
     k1,k2,k3,k4 = st.columns(4)
     k1.metric("Avg Views",    f"{df['views'].mean()/1e6:.2f}M")
     k2.metric("Avg Likes",    f"{df['likes'].mean()/1e3:.1f}K")
@@ -697,7 +664,6 @@ elif page == "Trending Analytics":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Category selector ────────────────────────────────────────────────────
     all_cats_analytics = ["🌐 All Categories"] + sorted(df["category_name"].dropna().unique().tolist())
     sel_analytics_cat = st.selectbox(
         "Select a Category to Analyse:",
@@ -738,7 +704,6 @@ elif page == "Trending Analytics":
         </div>
         """, unsafe_allow_html=True)
 
-        # ── Virality Score (ML-powered, user-friendly) ──────────────────────
         @st.cache_data
         def compute_virality_score(dataframe):
             from sklearn.ensemble import RandomForestClassifier
@@ -796,7 +761,6 @@ elif page == "Trending Analytics":
         </div>
         """, unsafe_allow_html=True)
 
-        # ── Charts row 1 ─────────────────────────────────────────────────────
         if sel_analytics_cat == "🌐 All Categories":
             st.markdown("#### <span style='display:inline-flex; align-items:center; gap:8px;'><i data-lucide='layout-dashboard' style='width:18px; height:18px; color:#374151;'></i> Views by Category</span>", unsafe_allow_html=True)
             cat_v = adf.groupby("category_name")["views"].sum().nlargest(12).reset_index()
@@ -816,7 +780,6 @@ elif page == "Trending Analytics":
                                legend=dict(font_size=10),margin=dict(t=10,b=10))
             st.plotly_chart(fig2, use_container_width=True)
 
-        # ── Scatter ──────────────────────────────────────────────────────────
         st.markdown("#### <span style='display:inline-flex; align-items:center; gap:8px;'><i data-lucide='trending-down' style='width:18px; height:18px; color:#374151;'></i> Views vs Likes Correlation</span>", unsafe_allow_html=True)
         sample = adf.sample(min(500,len(adf)))
         color_col = "category_name" if sel_analytics_cat == "🌐 All Categories" else "country"
@@ -831,7 +794,6 @@ elif page == "Trending Analytics":
         st.plotly_chart(fig3, use_container_width=True)
 
 
-        # ── Engagement health meter ───────────────────────────────────────────
         st.markdown("#### 💡 Content Health Insights")
         avg_eng    = adf["engagement_rate"].mean()
         avg_views  = adf["views"].mean()
@@ -859,10 +821,6 @@ elif page == "Trending Analytics":
                   <div style='font-size:16px;font-weight:700;color:#4338ca;'>{val}</div>
                   <div style='font-size:11px;color:#64748b;margin-top:6px;'>{tip}</div>
                 </div>""", unsafe_allow_html=True)
-
-# ══════════════════════════════════════════════
-#  PAGE 4 — WORLD MAP (Google Maps–style pins)
-# ══════════════════════════════════════════════
 elif page == "World Map":
     st.markdown("""<h1 style='font-family:Outfit;font-weight:900;font-size:38px;
         background:linear-gradient(90deg,#06b6d4,#7c3aed);
@@ -874,9 +832,6 @@ elif page == "World Map":
 
     metric_choice = st.radio("Colour pins by:",
         ["Total Views","Video Count","Avg Engagement Rate"], horizontal=True)
-
-    # ── Master lookup: handles BOTH full names AND 2-letter codes ─────────────
-    # Format: key → (lat, lon, iso3, display_name)
     COUNTRY_MASTER = {
         # ── Every country name format your Kaggle dataset might use ──────────
         # Covers: 2-letter ISO codes, full English names, common variants
@@ -1255,7 +1210,6 @@ elif page == "World Map":
         "United Republic of Tanzania":(-6.37,34.89,"TZA","Tanzania"),
     }
 
-    # ── Build per-country stats ───────────────────────────────────────────────
     country_stats = df.groupby("country").agg(
         total_views    =("views","sum"),
         video_count    =("title","count"),
@@ -1413,8 +1367,6 @@ elif page == "World Map":
           <span style='font-size:11px;color:#475569;'>High</span>
           <span style='font-size:12px;color:#64748b;'>({len(pins)} countries mapped)</span>
         </div>""", unsafe_allow_html=True)
-
-    # ── Category drilldown ────────────────────────────────────────────────────
     st.markdown("<hr style='border-color:#3a4080;margin:20px 0;'>", unsafe_allow_html=True)
     st.markdown("#### <span style='display:inline-flex; align-items:center; gap:8px;'><i data-lucide='search' style='width:18px; height:18px; color:#374151;'></i></span> Category Performance by Country", unsafe_allow_html=True)
     map_cat_filter = st.selectbox(
@@ -1475,14 +1427,6 @@ elif page == "World Map":
                         <span style='display:inline-flex; align-items:center; gap:8px;'><i data-lucide='trending-up' style='width:18px; height:18px; color:#374151;'></i></span> {crow["avg_engagement"]:.1f}%</div>
                     </div>""", unsafe_allow_html=True)
 
-
-
-
-
-
-# ══════════════════════════════════════════════
-#  PAGE 5 — LEADERBOARD
-# ══════════════════════════════════════════════
 elif page == "Leaderboard":
     st.markdown("""<h1 style='font-family:Outfit;font-weight:900;font-size:38px;
         background:linear-gradient(90deg,#f59e0b,#ef4444);
@@ -1540,10 +1484,6 @@ elif page == "Leaderboard":
                           yaxis=dict(gridcolor="#6600cc"),margin=dict(t=10,b=10))
         st.plotly_chart(fig, use_container_width=True)
 
-
-# ══════════════════════════════════════════════
-#  PAGE 6 — COUNTRY COMPARE
-# ══════════════════════════════════════════════
 elif page == "Country Compare":
     st.markdown("""<h1 style='font-family:Outfit;font-weight:900;font-size:38px;
         background:linear-gradient(90deg,#06b6d4,#ec4899);
@@ -1630,9 +1570,7 @@ elif page == "Country Compare":
                   </div>
                 </div>""", unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════
-#  PAGE 7 — VIRALITY PREDICTOR
-# ══════════════════════════════════════════════
+
 elif page == "Virality Predictor":
     st.markdown("""<h1 style='font-family:Outfit;font-weight:900;font-size:38px;
         background:linear-gradient(90deg,#10b981,#7c3aed);
@@ -1641,7 +1579,6 @@ elif page == "Virality Predictor":
         <p style='color:#475569;'>Enter your video details and find out if it will trend on YouTube!</p>
     """, unsafe_allow_html=True)
 
-    # ── ML runs silently in backend (Random Forest + Linear Regression) ───────
     def prepare_ml(dataframe):
         ml = dataframe.copy()
         le_cat  = LabelEncoder()
@@ -1676,7 +1613,6 @@ elif page == "Virality Predictor":
     st.markdown(f"<div style='color:#6d28d9;font-size:14px;margin-top:8px;'>"
                 f"<span style='display:inline-flex; align-items:center; gap:8px;'><i data-lucide='trending-up' style='width:18px; height:18px; color:#374151;'></i></span> Engagement Rate: <b>{inp_eng:.2f}%</b></div>", unsafe_allow_html=True)
 
-    # ── Video Duration Input (HH:MM:SS timer style) ───────────────────────────
     st.markdown("""
     <div style='margin-top:20px;margin-bottom:6px;'>
       <div style='font-size:13px;font-weight:600;color:#4b5563;margin-bottom:2px;'>⏱️ Video Duration</div>
@@ -1723,7 +1659,6 @@ elif page == "Virality Predictor":
         unsafe_allow_html=True
     )
 
-    # ── Licensed Content + Video Dimension ────────────────────────────────────
     lic_col, dim_col = st.columns(2)
     with lic_col:
         inp_licensed  = st.checkbox("Licensed Content", value=False)
@@ -1822,10 +1757,6 @@ elif page == "Virality Predictor":
           {tip_text}
         </div>
         """, unsafe_allow_html=True)
-
-# ══════════════════════════════════════════════
-#  PAGE 8 — MONETIZATION GUIDE
-# ══════════════════════════════════════════════
 elif page == "Monetization":
     st.markdown("""<h1 style='font-family:Inter;font-weight:700;font-size:32px;
         color:#0f172a;'>
@@ -1834,7 +1765,6 @@ elif page == "Monetization":
             letter-spacing:2px;'>Data-driven insights to maximise your YouTube revenue potential.</p>
     """, unsafe_allow_html=True)
 
-    # ── CPM benchmarks by category ────────────────────────────────────────────
     CPM_MAP = {
         "Film & Animation": 3.5, "Autos & Vehicles": 7.2, "Music": 2.0,
         "Pets & Animals": 3.0, "Sports": 4.0, "Travel & Events": 5.5,
@@ -1881,7 +1811,6 @@ elif page == "Monetization":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Revenue Calculator ────────────────────────────────────────────────────
     st.markdown("<hr style='border:0;border-top:1px solid #bf00ff33;margin:24px 0;'>", unsafe_allow_html=True)
     st.markdown("""<div style='border-left:4px solid #f59e0b;
         box-shadow:-4px 0 12px #ffe60044;padding-left:14px;margin-bottom:20px;'>
@@ -1905,7 +1834,6 @@ elif page == "Monetization":
         calc_country = st.selectbox("Primary Audience Country",
                                      sorted(df["country"].unique()), key="calc_country")
 
-    # ── Country currency + CPM multiplier (defined BEFORE button so always available) ──
     COUNTRY_CONFIG = {
         # Tier 1 — Premium English markets
         "US":{"sym":"$",   "name":"USD","flag":"🇺🇸","mult":1.50,"rate":1.00},
